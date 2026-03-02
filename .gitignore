@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+*.pyc
+
+# Django
+.env
+/static/
+/media/
