@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Cinema, Location
 
-admin.site.register(Location)
-admin.site.register(Cinema)
+from apps.cinemas import models as cinemas_models
+
+admin.site.register(cinemas_models.Location)
+admin.site.register(cinemas_models.Cinema)
+admin.site.register(cinemas_models.Seat)

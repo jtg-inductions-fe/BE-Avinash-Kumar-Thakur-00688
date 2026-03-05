@@ -1,0 +1,40 @@
+[project]
+name = "assignment-03"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asgiref==3.11.1",
+    "cloudinary==1.44.1",
+    "django>=4.2",
+    "django-cloudinary-storage==0.3.0",
+    "django-phonenumber-field==8.4.0",
+    "phonenumbers==9.0.25",
+    "pillow==12.1.1",
+    "psycopg==3.3.3",
+    "python-dotenv==1.2.2",
+    "sqlparse==0.5.5",
+    "typing-extensions==4.15.0",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit==4.5.1",
+    "ruff==0.15.4",
+]
+
+# Ruff Configuration
+[tool.ruff]
+lint.select = ["E", "F", "I"]
+exclude = [
+    "migrations",
+    "settings.py",
+]
+line-length = 100
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false

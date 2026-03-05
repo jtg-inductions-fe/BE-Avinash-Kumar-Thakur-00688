@@ -2,8 +2,6 @@ from django.contrib.auth.base_user import BaseUserManager
 
 
 class UserManager(BaseUserManager):
-    """Custom manager for creating user and superuser"""
-
     def create_user(self, email, password, **extra_fields):
         """
         Function to create user
@@ -17,7 +15,7 @@ class UserManager(BaseUserManager):
             User object
         """
         if not email:
-            raise ValueError('Email is required')
+            raise ValueError("Email is required")
 
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
@@ -35,10 +33,15 @@ class UserManager(BaseUserManager):
             extra_fields: Other fields which is passed
 
         Returns:
-            User object  
+            User object
         """
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True")
 
         return self.create_user(email, password, **extra_fields)

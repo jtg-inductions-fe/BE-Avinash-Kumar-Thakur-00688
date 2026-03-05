@@ -1,87 +1,61 @@
-from django.db import models
-from apps.cinemas.models import Cinema
-from apps.users.models import User
+from decimal import Decimal
 
-# Create your models here.
+from cloudinary.models import CloudinaryField
+from django.conf import settings
+from django.core.validators import MinValueValidator
+from django.db import models
+
+from apps.cinemas.models import Cinema, Seat
 
 
 class Movie(models.Model):
     """
-    Movie model to define the structure of the movie schema
+    Represent the movie which is played in cinema.
     """
-    name = models.CharField(max_length=100, unique=True)
-    """Name of the movie"""
-    poster = models.ImageField(upload_to='movies/images/')
-    """Poster of the movie"""
-    language = models.CharField(max_length=50)
-    """Language of the movie"""
-    genre = models.CharField(max_length=50)
-    """Genre of the movie"""
-    description = models.TextField()
-    """Description of the movie"""
-    duration = models.DurationField()
-    """Duration of the movie"""
 
-    class Meta:
-        """
-        Meta configuration for the movie model
-        """
-        db_table = 'movies_movie'
-        """Explicitly defines the name of the table"""
+    name = models.CharField(max_length=100, unique=True)
+    poster = CloudinaryField("poster", folder="movies/images/")
+    language = models.CharField(max_length=50)
+    genre = models.CharField(max_length=50)
+    description = models.TextField()
+    duration = models.DurationField()
 
     def __str__(self):
-        """Returns human readable string representation"""
         return self.name
 
 
 class Slot(models.Model):
     """
-    Represent movie show timing in a cinema
+    Represent slot for the movie in specific cinema.
     """
-    cinema = models.ForeignKey(Cinema, on_delete=models.CASCADE)
-    """Cinema where movie will be played"""
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-    """Movie that will be played in the slot"""
-    date_time = models.DateTimeField()
-    """Date and timing of the movie"""
-    price = models.DecimalField(max_digits=6, decimal_places=2)
-    """Price of the ticket"""
 
-    class Meta:
-        """"
-        Meta configuration for the slot model
-        """
-        db_table = 'slots_slot'
-        """Explicitly defines the name of the table"""
+    cinema = models.ForeignKey(Cinema, on_delete=models.CASCADE, related_name="slots")
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="slots")
+    date_time = models.DateTimeField()
+    price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))],
+        help_text="Price per ticket in INR",
+    )
 
     def __str__(self):
-        """Returns human readable string representation"""
-        return self.movie.name
+        return f"{self.cinema.name} - {self.movie.name} at {self.date_time}"
 
 
 class Booking(models.Model):
     """
-    Represent the booking of the movie in particular slot
+    Represent Booking for the movie in the specific slot.
     """
-    BOOKING_STATUS_CHOICES = [
-        ('AVAILABLE', 'Available'),
-        ('BOOKED', 'Booked'),
-        ('UNAVAILABLE', 'Unavailable')
-    ]
-    """Options of the booking status"""
 
-    slot = models.ForeignKey(Slot, on_delete=models.CASCADE)
-    """Slot in which movie is played"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    """User who booked ticket"""
-    row = models.CharField(max_length=2)
-    """Row number of the user"""
-    seat = models.PositiveIntegerField()
-    """Seat of the user"""
-    status = models.CharField(
-        max_length=20, choices=BOOKING_STATUS_CHOICES, default='AVAILABLE')
-    """Status of the booking"""
+    BOOKING_STATUS_CHOICES = [("BOOKED", "Booked"), ("CANCELLED", "Cancelled")]
+
+    slot = models.ForeignKey(Slot, on_delete=models.CASCADE, related_name="bookings")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="bookings"
+    )
+    seats = models.ManyToManyField(Seat, related_name="bookings")
+    status = models.CharField(max_length=20, choices=BOOKING_STATUS_CHOICES, default="BOOKED")
 
     def __str__(self):
-        """Returns human readable string representation"""
-        return self.slot.movie.name
+        return f"Booking {self.id} - {self.user.email} ({self.slot})"

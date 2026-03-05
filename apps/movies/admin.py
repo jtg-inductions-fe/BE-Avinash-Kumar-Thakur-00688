@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Movie, Slot, Booking
 
-admin.site.register(Movie)
-admin.site.register(Slot)
-admin.site.register(Booking)
+from apps.movies import models as movies_models
+
+admin.site.register(movies_models.Movie)
+admin.site.register(movies_models.Slot)
+admin.site.register(movies_models.Booking)
